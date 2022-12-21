@@ -282,6 +282,7 @@ dependencies = [
 name = "client"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "parity-scale-codec",
  "sp-runtime",
  "subxt",
