@@ -1,4 +1,3 @@
-
 use codec::Encode;
 use sp_runtime::AccountId32;
 use std::error::Error;
@@ -13,11 +12,12 @@ fn test() {
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async {
         let url = "wss://heiko-rpc.parallel.fi:443";
-        inner(url).await.unwrap();
+        // inner_fix_unlocking_value(url).await.unwrap();
+        inner_mint_assets(url).await.unwrap();
     });
 }
 
-async fn inner(url: &str) -> Result<(), Box<dyn Error>> {
+async fn inner_fix_unlocking_value(url: &str) -> Result<(), Box<dyn Error>> {
     let api = OnlineClient::<SubstrateConfig>::from_url(url).await?;
     let metadata = api.metadata();
 
@@ -114,5 +114,92 @@ async fn inner_test(url: &str) -> Result<(), Box<dyn Error>> {
     let x = format!("0x{}", hex::encode(encoded));
     println!("raw value: {:?}", x);
 
+    Ok(())
+}
+
+async fn inner_mint_assets(url: &str) -> Result<(), Box<dyn Error>> {
+    let api = OnlineClient::<SubstrateConfig>::from_url(url).await?;
+    let metadata = api.metadata();
+
+    let asset = 1000u32;
+    let accounts = [
+        (
+            "hJKsZFCVpbU5j4JyBBuCT3dPCnFQo6NRkRBnh5amxv4c3BAmd",
+            1995988249084,
+        ),
+        (
+            "hJGWPn4qMqsnKYxesoptH7v2nb86TBvGEgc3c7bED9UckzcZa",
+            1086355366963,
+        ),
+        (
+            "hJJGxdDuow7gbd2t1CoChFX4QqFcPoZorYedmXTBvpTf8BrTX",
+            2904412052002,
+        ),
+        (
+            "hJGcdTQpZF7C13vTHZ64JmYjR7Xmc6rRnYzHpBrxHfuH4uSxA",
+            265687968524,
+        ),
+        (
+            "hJFnpvjMZrf6d1v8FpwhuxjWroirYUhWCR4py4VfeLPQfJCDH",
+            1341595954865,
+        ),
+        (
+            "hJLwg4Z1VvR3ThtzHNEE2EEwSwkVF5SkjBZM5WuTBV7qXiNpZ",
+            30042942192,
+        ),
+        (
+            "hJFcxqZDndRosFBBeaVv5vni3qSxQop8EK6Pb8pC96K8nnDt4",
+            801601683104,
+        ),
+        (
+            "hJLV7bwrEB8YEcYp8kn6wHVm7HMH5b9turMneMVGfhzvVRSHw",
+            881394289415,
+        ),
+        (
+            "hJLwJd43GdU61LiVUsuQuw6kNNUC1QquaFQqgdijeDG4FznGe",
+            713544808381,
+        ),
+        (
+            "hJFcxqZDndRosFBBeaVv5vni3qSxQop8EK6Pb8pC96K8nnDt4",
+            1678655310313,
+        ),
+        (
+            "hJJx4iVRpEsMQpWAQExaWDA8drtn7F5iPFxr4TnCiSszvpY1N",
+            3883560250556,
+        ),
+        (
+            "hJJgj9Rx62L3763urXq9VkSd4kk4MpPJQejjhKgWzfVmoX31e",
+            7214053692266,
+        ),
+        (
+            "hJLkkst5BvDookGxwNtNFHoKCcfv9CY8o5dSdJYNbeL2v4LbW",
+            1451842861003,
+        ),
+        (
+            "hJGHKkKKhZWdAMNaBWK2Lums1dYfBHTjuhp4EWMJZCTd42Jw4",
+            3155756573073,
+        ),
+        (
+            "hJJuzTXNkj1WmWRP4hzyu2bSkcDbE4YjQQRpSoaUqWiPoNYVU",
+            173987417308,
+        ),
+    ];
+    let mut calls = vec![];
+    for (addr, amount) in accounts.into_iter() {
+        let account = AccountId32::from_str(addr)?;
+        let tx = HeikoRuntimeCall::Assets(AssetsCall::mint {
+            id: asset,
+            beneficiary: account.into(),
+            amount,
+        });
+
+        calls.push(tx);
+    }
+    let batch_tx = chain::tx().utility().batch_all(calls);
+
+    println!(
+        "batch_tx: {:?}",
+        format!("0x{}", hex::encode(batch_tx.encode_call_data(&metadata)?))
+    );
     Ok(())
 }

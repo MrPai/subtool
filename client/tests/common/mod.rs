@@ -5,3 +5,6 @@
 pub mod chain {}
 
 pub use chain::runtime_types::pallet_liquid_staking::types::UnlockChunk;
+
+pub use chain::runtime_types::heiko_runtime::RuntimeCall as HeikoRuntimeCall;
+pub use chain::runtime_types::pallet_assets::pallet::Call as AssetsCall;
