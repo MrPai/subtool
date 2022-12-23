@@ -1,4 +1,4 @@
-use codec::Encode;
+use codec::{Encode,Decode};
 use sp_runtime::AccountId32;
 use std::error::Error;
 use std::str::FromStr;
@@ -13,7 +13,8 @@ fn test() {
     rt.block_on(async {
         let url = "wss://heiko-rpc.parallel.fi:443";
         // inner_fix_unlocking_value(url).await.unwrap();
-        inner_mint_assets(url).await.unwrap();
+        // inner_mint_assets(url).await.unwrap();
+        decode_data().unwrap();
     });
 }
 
@@ -151,10 +152,10 @@ async fn inner_mint_assets(url: &str) -> Result<(), Box<dyn Error>> {
             "hJFcxqZDndRosFBBeaVv5vni3qSxQop8EK6Pb8pC96K8nnDt4",
             801601683104,
         ),
-        (
-            "hJLV7bwrEB8YEcYp8kn6wHVm7HMH5b9turMneMVGfhzvVRSHw",
-            881394289415,
-        ),
+        // (
+        //     "hJLV7bwrEB8YEcYp8kn6wHVm7HMH5b9turMneMVGfhzvVRSHw",
+        //     881394289415,
+        // ),
         (
             "hJLwJd43GdU61LiVUsuQuw6kNNUC1QquaFQqgdijeDG4FznGe",
             713544808381,
@@ -167,10 +168,10 @@ async fn inner_mint_assets(url: &str) -> Result<(), Box<dyn Error>> {
             "hJJx4iVRpEsMQpWAQExaWDA8drtn7F5iPFxr4TnCiSszvpY1N",
             3883560250556,
         ),
-        (
-            "hJJgj9Rx62L3763urXq9VkSd4kk4MpPJQejjhKgWzfVmoX31e",
-            7214053692266,
-        ),
+        // (
+        //     "hJJgj9Rx62L3763urXq9VkSd4kk4MpPJQejjhKgWzfVmoX31e",
+        //     7214053692266,
+        // ),
         (
             "hJLkkst5BvDookGxwNtNFHoKCcfv9CY8o5dSdJYNbeL2v4LbW",
             1451842861003,
@@ -185,7 +186,9 @@ async fn inner_mint_assets(url: &str) -> Result<(), Box<dyn Error>> {
         ),
     ];
     let mut calls = vec![];
+    let mut total_amount = 0u128;
     for (addr, amount) in accounts.into_iter() {
+        total_amount += amount;
         let account = AccountId32::from_str(addr)?;
         let tx = HeikoRuntimeCall::Assets(AssetsCall::mint {
             id: asset,
@@ -195,11 +198,35 @@ async fn inner_mint_assets(url: &str) -> Result<(), Box<dyn Error>> {
 
         calls.push(tx);
     }
+    assert!(total_amount==27_578_479_419_049-7214053692266-881394289415);
     let batch_tx = chain::tx().utility().batch_all(calls);
 
     println!(
         "batch_tx: {:?}",
         format!("0x{}", hex::encode(batch_tx.encode_call_data(&metadata)?))
     );
+    Ok(())
+}
+
+fn decode_data()-> Result<(), Box<dyn Error>> {
+    let mut s = hex::decode("040b21b840d5b314bd47").unwrap();
+    let data: Vec<UnlockChunk<u128>> = Decode::decode(&mut &s[..]).unwrap();
+    println!("hJLe4pxfrfRewDe1wvSXoPGbmecVe9ckW28K5rnhiyQsDVYy1: {:?}", data);
+
+    let mut s = hex::decode("040b56b77f077530bd47").unwrap();
+    let data: Vec<UnlockChunk<u128>> = Decode::decode(&mut &s[..]).unwrap();
+    println!("hJHTaMU6c9VHM6vq7LCk4mZrAG6V5RVShjoAzQoQBvWtyKsDa: {:?}", data);
+
+    let mut s = hex::decode("0c0fb87f9858628b1edd470fbbdf7d2465cc06bd470f94a81dbe682d48d547").unwrap();
+    let data: Vec<UnlockChunk<u128>> = Decode::decode(&mut &s[..]).unwrap();
+    println!("hJFU3r4zioT39AaBiTriJCVvoepeEGViF38DAkKECUjVwsvZK: {:?}", data);
+
+    let mut s = hex::decode("040b086d3d40a127c147").unwrap();
+    let data: Vec<UnlockChunk<u128>> = Decode::decode(&mut &s[..]).unwrap();
+    println!("hJK6oRtiPda7k1X5yGhVxYT7TZnu94REcbYt4uG5nMZECeAW3: {:?}", data);
+
+    let mut s = hex::decode("040ba6cfcf54b73dc147").unwrap();
+    let data: Vec<UnlockChunk<u128>> = Decode::decode(&mut &s[..]).unwrap();
+    println!("hJFFeJeajRKf71M9gqnkFwHgSpADFj27x9fCLrmreUtUoKYmd: {:?}", data);
     Ok(())
 }
