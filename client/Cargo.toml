@@ -6,9 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sp-runtime = "7.0.0"
-subxt       = "0.25.0"
+# sp-runtime = "7.0.0"
+sp-runtime         = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32"}
+subxt       = { git = "https://github.com/mrpai/subxt.git", branch = "polkadot-v0.9.32"}
 tokio       = { version = "1.23.0", features = ["full"] }
 codec       = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive", "full"] }
 hex = "0.4.3"
+
+[dev-dependencies]
+xcm         = { git = "https://github.com/paritytech/polkadot.git", branch = "release-v0.9.32"}
+# sp-core         = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.32"}
+cumulus-primitives-core         = { git = 'https://github.com/paritytech/cumulus.git', branch = 'polkadot-v0.9.32' }
 
