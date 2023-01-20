@@ -53,7 +53,7 @@ async fn inner_fix_usdt_failed(url: &str) -> Result<(), Box<dyn Error>> {
         ("hJJbhsrGL1nvZ1k4mvW82tY3zfYZubaSsDLptB6ncyfCGnaD3",37148308,),// https://parallel-heiko.subscan.io/xcm_message/kusama-e1652e5d23f5e3e91dabf12d92df94fdeb403b8c
     ];
     let destination = MultiLocation::new(1, X1(Parachain(1000)));
-    let fees: MultiAsset = (MultiLocation::here(), 30_000_000_000).into();
+    let fees: MultiAsset = (MultiLocation::parent(), 30_000_000_000).into();
     let mut message: xcm::v2::Xcm<()> = Xcm(vec![
         WithdrawAsset(MultiAssets::from(fees.clone())),
         BuyExecution {
@@ -83,7 +83,7 @@ async fn inner_fix_usdt_failed(url: &str) -> Result<(), Box<dyn Error>> {
     message.0.push(RefundSurplus);
     message.0.push(
         DepositAsset {
-            assets: fees.into(),
+            assets: Wild(All),
             max_assets: 1,
             beneficiary: convert(account),
         }
@@ -96,6 +96,14 @@ async fn inner_fix_usdt_failed(url: &str) -> Result<(), Box<dyn Error>> {
         LocalVersionedMultiLocation::decode(&mut &d[..]).unwrap(),
         LocalVersionedXcm::decode(&mut &v[..]).unwrap()
     );
+    // println!(
+    //     "orml_xcm_tx: {:?}",
+    //     format!(
+    //         "0x{}",
+    //         hex::encode(api.tx().call_data(&inner_tx)?)
+    //     )
+    // );
+
     let pre_image_tx = chain::tx()
         .preimage()
         .note_preimage(api.tx().call_data(&inner_tx)?);
@@ -106,9 +114,6 @@ async fn inner_fix_usdt_failed(url: &str) -> Result<(), Box<dyn Error>> {
             hex::encode(pre_image_tx.encode_call_data(&metadata)?)
         )
     );
-
-    // let sudo_tx = chain::tx().sudo().sudo(inner_tx.encode_call_data(&metadata)?);
-    // println!("sudo_tx: {:?}",format!("0x{}", hex::encode(sudo_tx.encode_call_data(&metadata)?)));
     Ok(())
 }
 
