@@ -104,14 +104,29 @@ async fn inner_fix_usdt_failed(url: &str) -> Result<(), Box<dyn Error>> {
     //     )
     // );
 
-    let pre_image_tx = chain::tx()
-        .preimage()
-        .note_preimage(api.tx().call_data(&inner_tx)?);
+    // let pre_image_tx = chain::tx()
+    //     .preimage()
+    //     .note_preimage(api.tx().call_data(&inner_tx)?);
+    // println!(
+    //     "pre_image_tx: {:?}",
+    //     format!(
+    //         "0x{}",
+    //         hex::encode(pre_image_tx.encode_call_data(&metadata)?)
+    //     )
+    // );
+
+    let inner_call = HeikoRuntimeCall::OrmlXcm(OrmlXcmCall::send_as_sovereign {
+        dest: Box::new(LocalVersionedMultiLocation::decode(&mut &d[..]).unwrap()),
+        message:  Box::new(LocalVersionedXcm::decode(&mut &v[..]).unwrap()),
+    });
+    let council_motion_tx = chain::tx()
+        .general_council()
+        .propose(2, inner_call, 10000);
     println!(
-        "pre_image_tx: {:?}",
+        "council_motion_tx: {:?}",
         format!(
             "0x{}",
-            hex::encode(pre_image_tx.encode_call_data(&metadata)?)
+            hex::encode(council_motion_tx.encode_call_data(&metadata)?)
         )
     );
     Ok(())
